@@ -2,6 +2,8 @@ import { homedir } from 'os';
 import { stdin as input, stdout as output } from 'process';
 import readline from 'readline';
 import { printWorkingDirectory } from './utils/printWorkingDirectory.js';
+import { handleInput } from './app.js';
+import { currentDirectory } from './state.js';
 
 const args = process.argv.slice(2);
 
@@ -10,8 +12,6 @@ const usernameArg = args.find(arg => arg.startsWith('--username='));
 const username = usernameArg
     ? usernameArg.split('=')[1]
     : 'Guest';
-
-let currentDirectory = homedir();
 
 console.log(`Welcome to the File Manager, ${username}!`);
 
@@ -22,16 +22,15 @@ const rl = readline.createInterface({
     output
 });
 
-rl.on('line', (command) => {
+rl.on('line', async (input) => {
+    input = input.trim();
 
-    command = command.trim();
-
-    if (command === '.exit') {
+    if (input === '.exit') {
         exitProgram();
         return;
     }
 
-    console.log('Invalid input');
+    await handleInput(input);
 
     printWorkingDirectory(currentDirectory);
 });
@@ -44,6 +43,5 @@ function exitProgram() {
     console.log(`Thank you for using File Manager, ${username}, goodbye!`);
 
     rl.close();
-
     process.exit(0);
 }
